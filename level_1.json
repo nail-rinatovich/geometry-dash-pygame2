@@ -1,0 +1,14 @@
+{
+  "level_name": "Stereo Madness Clone",
+  "speed": 360,
+  "objects": [
+    {"type": "spike", "x": 600, "y": 500},
+    {"type": "spike", "x": 900, "y": 500},
+    {"type": "spike", "x": 1200, "y": 500},
+    {"type": "spike", "x": 1240, "y": 500},
+    {"type": "spike", "x": 1600, "y": 500},
+    {"type": "spike", "x": 1900, "y": 500},
+    {"type": "spike", "x": 1940, "y": 500},
+    {"type": "spike", "x": 1980, "y": 500}
+  ]
+}

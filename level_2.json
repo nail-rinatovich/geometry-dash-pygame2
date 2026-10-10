@@ -1,0 +1,14 @@
+{
+  "level_name": "Back On Track Clone",
+  "speed": 380,
+  "objects": [
+    {"type": "spike", "x": 500, "y": 500},
+    {"type": "block", "x": 700, "y": 460},
+    {"type": "block", "x": 740, "y": 460},
+    {"type": "spike", "x": 720, "y": 420},
+    {"type": "spike", "x": 1000, "y": 500},
+    {"type": "block", "x": 1300, "y": 420},
+    {"type": "block", "x": 1340, "y": 420},
+    {"type": "spike", "x": 1600, "y": 500}
+  ]
+}
