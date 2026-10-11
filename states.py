@@ -56,7 +56,7 @@ class LevelSelectState(BaseState):
         title = self.font.render("ВЫБОР УРОВНЯ (Нажмите цифру 1, 2 или 3):", True, (255, 255, 255))
         screen.blit(title, (50, 50))
         y_offset = 150
-        names = ["1. Stereo Madness (30 сек)", "2. Back On Track", "3. Polargeist"]
+        names = ["1. Stereo Madness (30 сек)", "2. Back On Track (30 сек)", "3. Polargeist (30 сек)"]
         for lvl in self.levels:
             txt = self.font.render(f"{names[lvl['id']-1]} | Рекорд: {lvl['best']}% | Попыток: {lvl['attempts']}", True, (230, 230, 230))
             screen.blit(txt, (50, y_offset))

@@ -1,16 +1,20 @@
 {
   "level_name": "Polargeist Clone",
   "speed": 430,
+  "duration_seconds": 30,
   "objects": [
-    {"type": "spike", "x": 450, "y": 500},
-    {"type": "block", "x": 650, "y": 460},
-    {"type": "block", "x": 690, "y": 420},
-    {"type": "block", "x": 730, "y": 380},
-    {"type": "spike", "x": 730, "y": 340},
-    {"type": "spike", "x": 1100, "y": 500},
-    {"type": "spike", "x": 1140, "y": 500},
-    {"type": "block", "x": 1400, "y": 460},
-    {"type": "spike", "x": 1400, "y": 420},
-    {"type": "spike", "x": 1800, "y": 500}
+    {"type": "spike", "x": 800},
+    {"type": "spike", "x": 1750},
+    {"type": "spike", "x": 2700},
+    {"type": "spike", "x": 3650},
+    {"type": "spike", "x": 4600},
+    {"type": "spike", "x": 5550},
+    {"type": "spike", "x": 6500},
+    {"type": "spike", "x": 7450},
+    {"type": "spike", "x": 8400},
+    {"type": "spike", "x": 9350},
+    {"type": "spike", "x": 10300},
+    {"type": "spike", "x": 11250},
+    {"type": "spike", "x": 12200}
   ]
 }
