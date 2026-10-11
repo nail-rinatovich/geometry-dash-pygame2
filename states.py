@@ -56,7 +56,7 @@ class LevelSelectState(BaseState):
         title = self.font.render("ВЫБОР УРОВНЯ (Нажмите цифру 1, 2 или 3):", True, (255, 255, 255))
         screen.blit(title, (50, 50))
         y_offset = 150
-        names = ["1. Stereo Madness", "2. Back On Track", "3. Polargeist"]
+        names = ["1. Stereo Madness (30 сек)", "2. Back On Track", "3. Polargeist"]
         for lvl in self.levels:
             txt = self.font.render(f"{names[lvl['id']-1]} | Рекорд: {lvl['best']}% | Попыток: {lvl['attempts']}", True, (230, 230, 230))
             screen.blit(txt, (50, y_offset))
@@ -74,30 +74,43 @@ class GameState(BaseState):
         self.manager.db.increment_attempt(self.level_id)
         self.attempts, _ = self.manager.db.get_stats(self.level_id)
         
-        self.level_name, self.level_speed, objects = LevelLoader.load_level(f"level_{self.level_id}.json", self.floor_y)
+        self.level_name, self.level_speed, objects, self.level_duration = LevelLoader.load_level(f"level_{self.level_id}.json", self.floor_y)
         self.obstacles = pygame.sprite.Group()
         self.obstacles.add(objects)
         
         self.player = Player(100, 300)
+        self.elapsed_time = 0
+        self.level_complete = False
         self.distance_traveled = 0
-        self.max_level_width = 2400 
+        self.max_level_width = self.level_speed * self.level_duration
         self.font = pygame.font.SysFont(None, 36)
 
     def handle_events(self, events):
         for event in events:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE or event.key == pygame.K_UP:
+                    if self.level_complete:
+                        self.manager.change_to(GameState)
+                        return
                     self.player.jump()
                 elif event.key == pygame.K_ESCAPE:
                     self.manager.change_to(LevelSelectState)
+                    return
 
     def update(self, dt):
+        if self.level_complete:
+            return
+
+        dt = min(dt, self.level_duration - self.elapsed_time)
         self.player.update(dt)
         
         # Двигаем уровень и считаем прогресс
-        self.distance_traveled += self.level_speed * dt
+        self.elapsed_time += dt
+        if self.elapsed_time >= self.level_duration - 1e-9:
+            self.elapsed_time = self.level_duration
+        self.distance_traveled = self.level_speed * self.elapsed_time
         if self.max_level_width > 0:
-            self.progress_percent = min(100, int((self.distance_traveled / self.max_level_width) * 100))
+            self.progress_percent = min(99, int((self.distance_traveled / self.max_level_width) * 100 + 1e-9))
             
         self.obstacles.update(dt, self.level_speed)
         
@@ -110,6 +123,11 @@ class GameState(BaseState):
                 # Перезапуск уровня
                 self.manager.change_to(GameState)
                 return
+
+        if self.elapsed_time >= self.level_duration:
+            self.level_complete = True
+            self.progress_percent = 100
+            self.manager.db.save_record(self.level_id, 100)
 
     def draw(self, screen):
         screen.fill((15, 15, 30))
@@ -130,6 +148,22 @@ class GameState(BaseState):
         # Отрисовка UI
         ui_text = self.font.render(f"Уровень: {self.level_name} | Попытка: {self.attempts} | Прогресс: {self.progress_percent}%", True, (255, 255, 255))
         screen.blit(ui_text, (20, 20))
+
+        time_text = self.font.render(f"Время: {self.elapsed_time:.1f} / {self.level_duration:g} сек", True, (200, 200, 200))
+        screen.blit(time_text, (20, 55))
         
         hint = self.font.render("ESC — Выход в меню", True, (150, 150, 150))
         screen.blit(hint, (20, screen.get_height() - 50))
+
+        if self.level_complete:
+            overlay = pygame.Surface(screen.get_size(), pygame.SRCALPHA)
+            overlay.fill((0, 0, 0, 190))
+            screen.blit(overlay, (0, 0))
+            messages = [
+                ("УРОВЕНЬ ПРОЙДЕН!", (0, 255, 100)),
+                (f"100% — {self.level_duration:g} секунд", (255, 255, 255)),
+                ("ПРОБЕЛ — повторить | ESC — меню", (200, 200, 200)),
+            ]
+            for index, (message, color) in enumerate(messages):
+                text = self.font.render(message, True, color)
+                screen.blit(text, text.get_rect(center=(screen.get_width() // 2, 240 + index * 50)))

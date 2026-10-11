@@ -9,10 +9,12 @@ class Spike(pygame.sprite.Sprite):
         points = [(0, self.size), (self.size // 2, 0), (self.size, self.size)]
         pygame.draw.polygon(self.image, (255, 50, 50), points)
         self.rect = self.image.get_rect(bottomleft=(x, floor_y))
+        self.x = float(x)
         self.mask = pygame.mask.from_surface(self.image)
 
     def update(self, dt, speed):
-        self.rect.x -= speed * dt
+        self.x -= speed * dt
+        self.rect.x = round(self.x)
         if self.rect.right < 0:
             self.kill()
 
@@ -30,12 +32,14 @@ class Block(pygame.sprite.Sprite):
         # В JSON y указывает на верхнюю грань блока, если он стоит на полу,
         # либо на его точную высоту в воздухе.
         self.rect = self.image.get_rect(topleft=(x, y - self.size))
+        self.x = float(x)
         
         # Маска для коллизий
         self.mask = pygame.mask.from_surface(self.image)
 
     def update(self, dt, speed):
         """Движение блока влево."""
-        self.rect.x -= speed * dt
+        self.x -= speed * dt
+        self.rect.x = round(self.x)
         if self.rect.right < 0:
             self.kill()

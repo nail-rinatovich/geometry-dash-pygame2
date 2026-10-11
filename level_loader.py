@@ -8,13 +8,14 @@ class LevelLoader:
     def load_level(filename, floor_y):
         if not os.path.exists(filename):
             print(f"Ошибка: Файл уровня {filename} не найден!")
-            return "Unknown Level", 300, []
+            return "Unknown Level", 300, [], 8
 
         with open(filename, "r", encoding="utf-8") as f:
             data = json.load(f)
 
         level_name = data.get("level_name", "Без названия")
         speed = data.get("speed", 350)
+        duration_seconds = data.get("duration_seconds", 2400 / speed)
         raw_objects = data.get("objects", [])
 
         obstacles_list = []
@@ -32,4 +33,4 @@ class LevelLoader:
                 block = Block(x, y)
                 obstacles_list.append(block)
 
-        return level_name, speed, obstacles_list
+        return level_name, speed, obstacles_list, duration_seconds
