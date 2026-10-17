@@ -7,10 +7,9 @@ class DatabaseManager:
         self.init_db()
 
     def init_db(self):
-        """Создает таблицы и инициализирует 3 стартовых уровня."""
+        """Создает таблицы и инициализирует 4 уровня."""
         conn = sqlite3.connect(self.db_name)
         cursor = conn.cursor()
-        
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS levels (
                 id INTEGER PRIMARY KEY,
@@ -18,7 +17,6 @@ class DatabaseManager:
                 max_x INTEGER
             )
         ''')
-        
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS records (
                 level_id INTEGER PRIMARY KEY,
@@ -27,18 +25,16 @@ class DatabaseManager:
                 FOREIGN KEY (level_id) REFERENCES levels(id)
             )
         ''')
-        
-        # Добавляем все 3 уровня в базу
+        # Добавляем все 4 уровня в базу
         levels_data = [
             (1, "Stereo Madness Clone", 2200),
             (2, "Back On Track Clone", 2200),
-            (3, "Polargeist Clone", 2200)
+            (3, "Polargeist Clone", 2200),
+            (4, "Dry Out Clone", 2200)  # НОВЫЙ 4-й уровень
         ]
-        
         for lvl_id, name, max_x in levels_data:
             cursor.execute("INSERT OR IGNORE INTO levels (id, name, max_x) VALUES (?, ?, ?)", (lvl_id, name, max_x))
             cursor.execute("INSERT OR IGNORE INTO records (level_id) VALUES (?)", (lvl_id,))
-        
         conn.commit()
         conn.close()
 
@@ -54,11 +50,9 @@ class DatabaseManager:
         cursor = conn.cursor()
         cursor.execute("SELECT best_progress FROM records WHERE level_id = ?", (level_id,))
         row = cursor.fetchone()
-        
         if row and progress_percent > row[0]:
             cursor.execute("UPDATE records SET best_progress = ? WHERE level_id = ?", (progress_percent, level_id))
             print(f"Новый рекорд для Уровня {level_id}: {progress_percent}%!")
-            
         conn.commit()
         conn.close()
 

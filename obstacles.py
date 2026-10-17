@@ -25,15 +25,14 @@ class Block(pygame.sprite.Sprite):
         super().__init__()
         self.size = 40
         self.image = pygame.Surface((self.size, self.size))
-        self.image.fill((200, 200, 200)) # Серый цвет для блоков
+        self.image.fill((200, 200, 200))  # Серый цвет для блоков
         # Рисуем внутреннюю рамку
         pygame.draw.rect(self.image, (100, 100, 100), (0, 0, self.size, self.size), 2)
         
-        # В JSON y указывает на верхнюю грань блока, если он стоит на полу,
-        # либо на его точную высоту в воздухе.
-        self.rect = self.image.get_rect(topleft=(x, y - self.size))
+        # ИСПРАВЛЕНО: y в JSON — это ВЕРХНЯЯ грань блока
+        # Если блок стоит на полу (floor_y=500), то y должен быть 460 (500-40)
+        self.rect = self.image.get_rect(topleft=(x, y))
         self.x = float(x)
-        
         # Маска для коллизий
         self.mask = pygame.mask.from_surface(self.image)
 

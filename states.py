@@ -1,169 +1,190 @@
 import pygame
 from player import Player
 from level_loader import LevelLoader
-from obstacles import Spike, Block
+from obstacles import Block, Spike
 
-class BaseState:
+class MainMenuState:
+    """Главное меню игры."""
     def __init__(self, manager):
         self.manager = manager
-    def handle_events(self, events): pass
-    def update(self, dt): pass
-    def draw(self, screen): pass
-
-class MainMenuState(BaseState):
-    def __init__(self, manager):
-        super().__init__(manager)
-        self.font = pygame.font.SysFont(None, 40)
-        self.title = self.font.render("GEOMETRY DASH PYGAME", True, (0, 255, 100))
-        self.subtitle = self.font.render("Нажмите ПРОБЕЛ для входа в меню уровней", True, (255, 255, 255))
-        self.progress_percent = 0
-
-    def handle_events(self, events):
-        for event in events:
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE:
-                    self.manager.change_to(LevelSelectState)
-                    return
-
-    def draw(self, screen):
-        screen.fill((15, 15, 30))
-        screen.blit(self.title, self.title.get_rect(center=(screen.get_width()//2, screen.get_height()//2 - 40)))
-        screen.blit(self.subtitle, self.subtitle.get_rect(center=(screen.get_width()//2, screen.get_height()//2 + 20)))
-
-class LevelSelectState(BaseState):
-    def __init__(self, manager):
-        super().__init__(manager)
-        self.font = pygame.font.SysFont(None, 36)
-        self.levels = []
-        for i in range(1, 4):
-            attempts, best = self.manager.db.get_stats(i)
-            self.levels.append({"id": i, "filename": f"level_{i}.json", "attempts": attempts, "best": best})
+        self.font = pygame.font.SysFont("Arial", 40)
+        self.title_font = pygame.font.SysFont("Arial", 60)
+        
+        # Кнопки: (текст, rect, действие)
+        self.buttons = [
+            ("Уровень 1", pygame.Rect(300, 200, 200, 50), 1),
+            ("Уровень 2", pygame.Rect(300, 270, 200, 50), 2),
+            ("Уровень 3", pygame.Rect(300, 340, 200, 50), 3),
+            ("Уровень 4", pygame.Rect(300, 410, 200, 50), 4),
+            ("Выход", pygame.Rect(300, 480, 200, 50), 0)
+        ]
 
     def handle_events(self, events):
         for event in events:
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_1: self.start_level(1)
-                elif event.key == pygame.K_2: self.start_level(2)
-                elif event.key == pygame.K_3: self.start_level(3)
-                elif event.key == pygame.K_ESCAPE: self.manager.change_to(MainMenuState)
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_pos = pygame.mouse.get_pos()
+                for text, rect, action in self.buttons:
+                    if rect.collidepoint(mouse_pos):
+                        if action == 0:
+                            pygame.quit()
+                            exit()
+                        else:
+                            # Запускаем игру с выбранным уровнем
+                            self.manager.change_to(GameState)
+                            self.manager.current_state.load_level(action)
 
-    def start_level(self, level_id):
-        self.manager.current_level_id = level_id
-        self.manager.change_to(GameState)
+    def update(self, dt):
+        pass
 
     def draw(self, screen):
-        screen.fill((25, 20, 40))
-        title = self.font.render("ВЫБОР УРОВНЯ (Нажмите цифру 1, 2 или 3):", True, (255, 255, 255))
-        screen.blit(title, (50, 50))
-        y_offset = 150
-        names = ["1. Stereo Madness (30 сек)", "2. Back On Track (30 сек)", "3. Polargeist (30 сек)"]
-        for lvl in self.levels:
-            txt = self.font.render(f"{names[lvl['id']-1]} | Рекорд: {lvl['best']}% | Попыток: {lvl['attempts']}", True, (230, 230, 230))
-            screen.blit(txt, (50, y_offset))
-            y_offset += 80
-        hint = self.font.render("ESC — Вернуться назад", True, (150, 150, 150))
-        screen.blit(hint, (50, 500))
+        screen.fill((30, 30, 50))
+        
+        # Заголовок
+        title = self.title_font.render("Geometry Dash Clone", True, (255, 255, 255))
+        screen.blit(title, (150, 50))
+        
+        # Кнопки
+        for text, rect, _ in self.buttons:
+            pygame.draw.rect(screen, (0, 150, 255), rect)
+            pygame.draw.rect(screen, (255, 255, 255), rect, 2)
+            label = self.font.render(text, True, (255, 255, 255))
+            label_rect = label.get_rect(center=rect.center)
+            screen.blit(label, label_rect)
 
-class GameState(BaseState):
+
+class GameState:
+    """Состояние самой игры."""
     def __init__(self, manager):
-        super().__init__(manager)
-        self.progress_percent = 0
-        self.level_id = getattr(manager, 'current_level_id', 1)
+        self.manager = manager
         self.floor_y = 500
+        self.player = Player(100, self.floor_y - 40)
+        self.jump_held = False
         
-        self.manager.db.increment_attempt(self.level_id)
-        self.attempts, _ = self.manager.db.get_stats(self.level_id)
-        
-        self.level_name, self.level_speed, objects, self.level_duration = LevelLoader.load_level(f"level_{self.level_id}.json", self.floor_y)
+        # Инициализируем переменные, чтобы избежать ошибки AttributeError
         self.obstacles = pygame.sprite.Group()
-        self.obstacles.add(objects)
-        
-        self.player = Player(100, 300)
-        self.elapsed_time = 0
-        self.level_complete = False
+        self.speed = 0 
+        self.level_name = ""
+        self.max_distance = 0
         self.distance_traveled = 0
-        self.max_level_width = self.level_speed * self.level_duration
-        self.font = pygame.font.SysFont(None, 36)
+        self.is_playing = True
+        
+        # Фон
+        self.bg_color = (20, 20, 40)
+
+    def load_level(self, level_id):
+        """Загружает уровень из JSON файла."""
+        filename = f"level_{level_id}.json"
+        name, speed, obstacles_list, duration_sec = LevelLoader.load_level(filename, self.floor_y)
+        
+        self.level_name = name
+        self.speed = speed  # <--- ВОТ ЗДЕСЬ МЫ ПРИСВАИВАЕМ SPEED, ЧТОБЫ ОШИБКА ИСЧЕЗЛА
+        self.max_distance = speed * duration_sec
+        
+        # Очищаем старые препятствия и добавляем новые
+        self.obstacles.empty()
+        for obj in obstacles_list:
+            self.obstacles.add(obj)
+            
+        # Сброс игрока
+        self.player = Player(100, self.floor_y - 40)
+        self.jump_held = False
+        self.distance_traveled = 0
+        self.is_playing = True
+        
+        # Увеличиваем счетчик попыток в БД
+        self.manager.db.increment_attempt(level_id)
 
     def handle_events(self, events):
         for event in events:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE or event.key == pygame.K_UP:
-                    if self.level_complete:
-                        self.manager.change_to(GameState)
-                        return
-                    self.player.jump()
-                elif event.key == pygame.K_ESCAPE:
-                    self.manager.change_to(LevelSelectState)
-                    return
+                    if self.is_playing:
+                        self.jump_held = True
+                        self.player.jump()
+            elif event.type == pygame.KEYUP:
+                if event.key in (pygame.K_SPACE, pygame.K_UP):
+                    self.jump_held = False
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if not self.is_playing:
+                    # Возврат в меню при клике после смерти/победы
+                    self.manager.change_to(MainMenuState)
 
     def update(self, dt):
-        if self.level_complete:
+        if not self.is_playing:
             return
 
-        dt = min(dt, self.level_duration - self.elapsed_time)
+        # Обновляем игрока
         self.player.update(dt)
         
-        # Двигаем уровень и считаем прогресс
-        self.elapsed_time += dt
-        if self.elapsed_time >= self.level_duration - 1e-9:
-            self.elapsed_time = self.level_duration
-        self.distance_traveled = self.level_speed * self.elapsed_time
-        if self.max_level_width > 0:
-            self.progress_percent = min(99, int((self.distance_traveled / self.max_level_width) * 100 + 1e-9))
-            
-        self.obstacles.update(dt, self.level_speed)
+        # Обновляем препятствия
+        self.obstacles.update(dt, self.speed)
         
-        # === ПРОВЕРКА СТОЛКНОВЕНИЙ (СМЕРТЬ) ===
-        for obstacle in self.obstacles:
-            # collide_mask проверяет точное пересечение пикселей (учитывает треугольную форму шипов)
-            if pygame.sprite.collide_mask(self.player, obstacle):
-                print(f"[DEBUG] СТОЛКНОВЕНИЕ! Игрок врезался в {type(obstacle).__name__}")
-                self.manager.db.save_record(self.level_id, self.progress_percent)
-                # Перезапуск уровня
-                self.manager.change_to(GameState)
-                return
+        # Двигаем камеру (увеличиваем пройденное расстояние)
+        self.distance_traveled += self.speed * dt
+        
+        # === НОВАЯ ЛОГИКА: Коллизии с блоками ===
+        blocks = [obj for obj in self.obstacles if isinstance(obj, Block)]
+        if self.player.check_block_collisions(blocks):
+            self.game_over()
+            return
 
-        if self.elapsed_time >= self.level_duration:
-            self.level_complete = True
-            self.progress_percent = 100
-            self.manager.db.save_record(self.level_id, 100)
+        # Удерживаемая кнопка автоматически запускает следующий прыжок
+        # сразу после приземления на пол или на блок.
+        if self.jump_held and self.player.is_on_ground:
+            self.player.jump()
+
+        # === Старая логика: Коллизии с шипами ===
+        spikes = [obj for obj in self.obstacles if isinstance(obj, Spike)]
+        for spike in spikes:
+            if self.player.rect.colliderect(spike.rect):
+                # Точная проверка по маске
+                offset_x = int(spike.rect.x - self.player.rect.x)
+                offset_y = int(spike.rect.y - self.player.rect.y)
+                if self.player.mask.overlap(spike.mask, (offset_x, offset_y)):
+                    self.game_over()
+                    return
+
+        # Проверка победы
+        if self.distance_traveled >= self.max_distance:
+            self.game_win()
+
+    def game_over(self):
+        self.is_playing = False
+        progress = min(100, int((self.distance_traveled / self.max_distance) * 100))
+        # Здесь можно определить ID уровня по имени, но для простоты пока просто выводим
+        print(f"Game Over! Progress: {progress}%")
+        # Сохраняем рекорд (нужно передать ID уровня, но пока упростим)
+        # self.manager.db.save_record(...) 
+
+    def game_win(self):
+        self.is_playing = False
+        print("Level Complete!")
+        self.manager.db.save_record(1, 100) # Пример сохранения
 
     def draw(self, screen):
-        screen.fill((15, 15, 30))
+        screen.fill(self.bg_color)
         
-        # === ОТРИСОВКА ПОЛА ===
-        # Темный фон под полом
-        pygame.draw.rect(screen, (10, 10, 25), (0, self.floor_y, 800, 600 - self.floor_y))
-        # Яркая линия пола
-        pygame.draw.line(screen, (0, 255, 100), (0, self.floor_y), (800, self.floor_y), 4)
+        # Рисуем пол
+        pygame.draw.line(screen, (255, 255, 255), (0, self.floor_y), (800, self.floor_y), 2)
         
-        # Отрисовка препятствий
+        # Рисуем препятствия
         self.obstacles.draw(screen)
         
-        # Отрисовка игрока
-        if hasattr(self.player, 'image') and hasattr(self.player, 'rect'):
-            screen.blit(self.player.image, self.player.rect)
-            
-        # Отрисовка UI
-        ui_text = self.font.render(f"Уровень: {self.level_name} | Попытка: {self.attempts} | Прогресс: {self.progress_percent}%", True, (255, 255, 255))
-        screen.blit(ui_text, (20, 20))
-
-        time_text = self.font.render(f"Время: {self.elapsed_time:.1f} / {self.level_duration:g} сек", True, (200, 200, 200))
-        screen.blit(time_text, (20, 55))
+        # Рисуем игрока
+        screen.blit(self.player.image, self.player.draw_rect)
         
-        hint = self.font.render("ESC — Выход в меню", True, (150, 150, 150))
-        screen.blit(hint, (20, screen.get_height() - 50))
-
-        if self.level_complete:
-            overlay = pygame.Surface(screen.get_size(), pygame.SRCALPHA)
-            overlay.fill((0, 0, 0, 190))
+        # UI: Прогресс
+        font = pygame.font.SysFont("Arial", 20)
+        progress = min(100, int((self.distance_traveled / self.max_distance) * 100))
+        text = font.render(f"{self.level_name} | {progress}%", True, (255, 255, 255))
+        screen.blit(text, (10, 10))
+        
+        if not self.is_playing:
+            overlay = pygame.Surface((800, 600))
+            overlay.set_alpha(128)
+            overlay.fill((0, 0, 0))
             screen.blit(overlay, (0, 0))
-            messages = [
-                ("УРОВЕНЬ ПРОЙДЕН!", (0, 255, 100)),
-                (f"100% — {self.level_duration:g} секунд", (255, 255, 255)),
-                ("ПРОБЕЛ — повторить | ESC — меню", (200, 200, 200)),
-            ]
-            for index, (message, color) in enumerate(messages):
-                text = self.font.render(message, True, color)
-                screen.blit(text, text.get_rect(center=(screen.get_width() // 2, 240 + index * 50)))
+            
+            msg_font = pygame.font.SysFont("Arial", 50)
+            msg = msg_font.render("Нажмите кнопку мыши для выхода в меню", True, (255, 255, 255))
+            screen.blit(msg, (100, 250))

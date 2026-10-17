@@ -1,20 +1,103 @@
 {
   "level_name": "Polargeist Clone",
-  "speed": 430,
-  "duration_seconds": 30,
+  "speed": 420,
+  "duration_seconds": 55,
   "objects": [
-    {"type": "spike", "x": 800},
-    {"type": "spike", "x": 1750},
-    {"type": "spike", "x": 2700},
-    {"type": "spike", "x": 3650},
-    {"type": "spike", "x": 4600},
-    {"type": "spike", "x": 5550},
-    {"type": "spike", "x": 6500},
-    {"type": "spike", "x": 7450},
-    {"type": "spike", "x": 8400},
-    {"type": "spike", "x": 9350},
-    {"type": "spike", "x": 10300},
-    {"type": "spike", "x": 11250},
-    {"type": "spike", "x": 12200}
+    { "type": "spike", "x": 600, "y": 500 },
+    { "type": "spike", "x": 640, "y": 500 },
+
+    { "type": "block", "x": 1150, "y": 460 },
+    { "type": "spike", "x": 1350, "y": 500 },
+    { "type": "spike", "x": 1390, "y": 500 },
+    { "type": "spike", "x": 1430, "y": 500 },
+
+    { "type": "block", "x": 2000, "y": 460 },
+    { "type": "block", "x": 2040, "y": 420 },
+    { "type": "spike", "x": 2250, "y": 500 },
+    { "type": "spike", "x": 2290, "y": 500 },
+
+    { "type": "spike", "x": 2800, "y": 500 },
+    { "type": "spike", "x": 2840, "y": 500 },
+    { "type": "spike", "x": 2880, "y": 500 },
+
+    { "type": "block", "x": 3400, "y": 460 },
+    { "type": "block", "x": 3440, "y": 460 },
+    { "type": "block", "x": 3480, "y": 420 },
+    { "type": "spike", "x": 3700, "y": 500 },
+    { "type": "spike", "x": 3740, "y": 500 },
+    { "type": "spike", "x": 3780, "y": 500 },
+
+    { "type": "spike", "x": 4300, "y": 500 },
+    { "type": "spike", "x": 4340, "y": 500 },
+
+    { "type": "block", "x": 4800, "y": 460 },
+    { "type": "block", "x": 4840, "y": 420 },
+    { "type": "block", "x": 4880, "y": 380 },
+    { "type": "spike", "x": 5100, "y": 500 },
+    { "type": "spike", "x": 5140, "y": 500 },
+    { "type": "spike", "x": 5180, "y": 500 },
+
+    { "type": "spike", "x": 5700, "y": 500 },
+    { "type": "spike", "x": 5740, "y": 500 },
+    { "type": "spike", "x": 5780, "y": 500 },
+
+    { "type": "block", "x": 6300, "y": 460 },
+    { "type": "spike", "x": 6500, "y": 500 },
+    { "type": "spike", "x": 6540, "y": 500 },
+
+    { "type": "block", "x": 7000, "y": 460 },
+    { "type": "block", "x": 7040, "y": 420 },
+    { "type": "spike", "x": 7250, "y": 500 },
+    { "type": "spike", "x": 7290, "y": 500 },
+    { "type": "spike", "x": 7330, "y": 500 },
+
+    { "type": "spike", "x": 7850, "y": 500 },
+    { "type": "spike", "x": 7890, "y": 500 },
+    { "type": "spike", "x": 7930, "y": 500 },
+    { "type": "spike", "x": 7970, "y": 500 },
+
+    { "type": "block", "x": 8500, "y": 460 },
+    { "type": "block", "x": 8540, "y": 460 },
+    { "type": "block", "x": 8580, "y": 420 },
+    { "type": "block", "x": 8620, "y": 380 },
+    { "type": "spike", "x": 8850, "y": 500 },
+    { "type": "spike", "x": 8890, "y": 500 },
+    { "type": "spike", "x": 8930, "y": 500 },
+
+    { "type": "spike", "x": 9500, "y": 500 },
+    { "type": "spike", "x": 9540, "y": 500 },
+    { "type": "spike", "x": 9580, "y": 500 },
+
+    { "type": "block", "x": 10100, "y": 460 },
+    { "type": "spike", "x": 10300, "y": 500 },
+    { "type": "spike", "x": 10340, "y": 500 },
+    { "type": "spike", "x": 10380, "y": 500 },
+
+    { "type": "spike", "x": 10900, "y": 500 },
+    { "type": "spike", "x": 10940, "y": 500 },
+    { "type": "spike", "x": 10980, "y": 500 },
+
+    { "type": "block", "x": 11500, "y": 460 },
+    { "type": "block", "x": 11540, "y": 420 },
+    { "type": "spike", "x": 11750, "y": 500 },
+    { "type": "spike", "x": 11790, "y": 500 },
+    { "type": "spike", "x": 11830, "y": 500 },
+
+    { "type": "spike", "x": 12400, "y": 500 },
+    { "type": "spike", "x": 12440, "y": 500 },
+    { "type": "spike", "x": 12480, "y": 500 },
+
+    { "type": "spike", "x": 13100, "y": 500 },
+    { "type": "spike", "x": 13700, "y": 500 },
+    { "type": "spike", "x": 14300, "y": 500 },
+    { "type": "spike", "x": 14900, "y": 500 },
+    { "type": "spike", "x": 15500, "y": 500 },
+    { "type": "spike", "x": 16100, "y": 500 },
+    { "type": "spike", "x": 16700, "y": 500 },
+    { "type": "spike", "x": 17300, "y": 500 },
+    { "type": "spike", "x": 17900, "y": 500 },
+    { "type": "spike", "x": 18500, "y": 500 },
+    { "type": "spike", "x": 19100, "y": 500 },
+    { "type": "spike", "x": 19700, "y": 500 }
   ]
 }
